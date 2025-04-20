@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Discord Webhook Embed Creator 2.0 💬</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-8">
+  <div class="max-w-4xl mx-auto space-y-6">
+    <h1 class="text-4xl font-bold text-center">💬 Discord Embed Creator</h1>
+
+    <!-- Inputs -->
+    <div class="bg-gray-800 p-6 rounded-xl shadow-md grid grid-cols-1 md:grid-cols-2 gap-6">
+      <input id="webhookUrl" placeholder="Webhook URL" class="p-2 bg-gray-700 rounded" />
+
+      <input id="embedTitle" placeholder="Embed Titel (optional)" class="p-2 bg-gray-700 rounded" />
+
+      <textarea id="embedDescription" placeholder="Beschreibung (optional)" class="p-2 bg-gray-700 rounded col-span-2"></textarea>
+
+      <input id="embedColor" type="color" value="#5865F2" class="p-2 bg-gray-700 rounded w-full" />
+
+      <input id="thumbnailUrl" type="text" placeholder="Thumbnail URL (optional)" class="p-2 bg-gray-700 rounded" />
+      <input id="thumbnailFile" type="file" accept="image/*" class="p-2 bg-gray-700 rounded" />
+
+      <input id="authorName" placeholder="Author Name (optional)" class="p-2 bg-gray-700 rounded" />
+      <input id="authorIcon" placeholder="Author Icon URL (optional)" class="p-2 bg-gray-700 rounded" />
+
+      <input id="footerText" placeholder="Footer Text (optional)" class="p-2 bg-gray-700 rounded" />
+      <input id="footerIcon" placeholder="Footer Icon URL (optional)" class="p-2 bg-gray-700 rounded" />
+
+      <input id="timestamp" type="datetime-local" class="p-2 bg-gray-700 rounded" />
+    </div>
+
+    <!-- Button -->
+    <button onclick="sendEmbed()" class="w-full bg-blue-600 hover:bg-blue-700 p-3 rounded-xl text-lg font-semibold">
+      🚀 Embed senden
+    </button>
+
+    <!-- Preview -->
+    <div class="bg-gray-800 p-6 rounded-xl mt-6 shadow">
+      <h2 class="text-2xl font-semibold mb-4">🧪 Vorschau (Simuliert)</h2>
+      <div class="border-l-4 pl-4 border-blue-500">
+        <div id="previewTitle" class="text-xl font-bold"></div>
+        <div id="previewDescription" class="text-gray-300 mt-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const previewTitle = document.getElementById("previewTitle");
+    const previewDescription = document.getElementById("previewDescription");
+    const embedTitle = document.getElementById("embedTitle");
+    const embedDescription = document.getElementById("embedDescription");
+    const thumbnailFile = document.getElementById("thumbnailFile");
+
+    embedTitle.addEventListener("input", () => {
+      previewTitle.textContent = embedTitle.value;
+    });
+
+    embedDescription.addEventListener("input", () => {
+      previewDescription.textContent = embedDescription.value;
+    });
+
+    async function sendEmbed() {
+      const url = document.getElementById("webhookUrl").value.trim();
+      if (!url) return alert("Webhook URL fehlt 💀");
+
+      let thumbnailUrl = document.getElementById("thumbnailUrl").value.trim();
+
+      // Wenn ein Bild hochgeladen wurde
+      if (thumbnailFile.files[0]) {
+        const file = thumbnailFile.files[0];
+        const reader = new FileReader();
+        reader.onloadend = async function () {
+          thumbnailUrl = reader.result;
+          sendWithEmbed(thumbnailUrl);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        sendWithEmbed(thumbnailUrl);
+      }
+    }
+
+    async function sendWithEmbed(thumbnailUrl) {
+      const title = document.getElementById("embedTitle").value.trim();
+      const description = document.getElementById("embedDescription").value.trim();
+      const colorHex = document.getElementById("embedColor").value;
+      const authorName = document.getElementById("authorName").value.trim();
+      const authorIcon = document.getElementById("authorIcon").value.trim();
+      const footerText = document.getElementById("footerText").value.trim();
+      const footerIcon = document.getElementById("footerIcon").value.trim();
+      const timestampRaw = document.getElementById("timestamp").value;
+
+      const embed = {};
+
+      if (title) embed.title = title;
+      if (description) embed.description = description;
+      if (colorHex) embed.color = parseInt(colorHex.replace("#", "0x"));
+
+      if (thumbnailUrl) embed.thumbnail = { url: thumbnailUrl };
+
+      if (authorName || authorIcon) {
+        embed.author = {};
+        if (authorName) embed.author.name = authorName;
+        if (authorIcon) embed.author.icon_url = authorIcon;
+      }
+
+      if (footerText || footerIcon) {
+        embed.footer = {};
+        if (footerText) embed.footer.text = footerText;
+        if (footerIcon) embed.footer.icon_url = footerIcon;
+      }
+
+      if (timestampRaw) {
+        const isoTime = new Date(timestampRaw).toISOString();
+        embed.timestamp = isoTime;
+      }
+
+      const payload = {
+        embeds: [embed]
+      };
+
+      try {
+        const res = await fetch(document.getElementById("webhookUrl").value, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const responseText = await res.text();
+
+        if (res.ok) {
+          alert("✅ Embed wurde erfolgreich gesendet!");
+        } else {
+          console.error("Fehler:", responseText);
+          alert("❌ Fehler beim Senden:\n" + responseText);
+        }
+      } catch (err) {
+        console.error("Request Failed", err);
+        alert("❌ Netzwerk- oder Scriptfehler. Check die Konsole.");
+      }
+    }
+  </script>
+</body>
+</html>
