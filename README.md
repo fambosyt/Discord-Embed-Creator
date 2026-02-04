@@ -13,6 +13,10 @@ Ein einfaches Tool, um ansprechende Discord Embeds zu erstellen und zu exportier
 - Export als JSON oder direkt verwendbarer Code (für Discord.js, Python `discord.Embed`, etc.)
 - Dark/Light Mode Unterstützung
 
+## 🌍 Live-Version
+
+👉 [https://embed-creator.fambosyt.eu/](https://embed-creator.fambosyt.eu/)
+
 ## 🛠️ Installation
 
 - Download the index.html and open it
